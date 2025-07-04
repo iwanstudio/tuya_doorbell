@@ -1,8 +1,15 @@
 name: Tuya MQTT Doorbell
 version: "1.0"
 slug: tuya_mqtt_doorbell
-description: Listen for Tuya doorbell presses and send MQTT messages
-startup: application
+description: Integration for Tuya doorbell via MQTT
+arch:
+  - amd64
+  - armv7
+  - armhf
+startup: before
 boot: auto
+map:
+  - source: .
+    target: /app
 options: {}
 schema: {}
