@@ -14,7 +14,7 @@ schema:
     type: str
   mqtt_port:
     type: int
-    default: 1883
+    default: '1883'   # default jako string
   mqtt_username:
     type: str
   mqtt_password:
@@ -23,4 +23,5 @@ schema:
     type: str
   device_local_key:
     type: str
-    required: true
+    required: 'true'  # required jako string
+
