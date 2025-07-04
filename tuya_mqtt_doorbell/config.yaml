@@ -30,3 +30,4 @@ schema:
     type: str
   device_local_key:
     type: str
+    required: true
