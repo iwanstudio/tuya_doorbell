@@ -8,9 +8,6 @@ arch:
   - armhf
 startup: application
 boot: auto
-map:
-  - type: bind
-    source: .
-    target: /app
+# map: []  # lub usuń całkowicie
 options: {}
 schema: {}
