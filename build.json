@@ -1,0 +1,11 @@
+{
+  "name": "Tuya MQTT Doorbell",
+  "version": "1.0",
+  "slug": "tuya_mqtt_doorbell",
+  "description": "Custom add-on to listen for Tuya doorbell press and publish MQTT message",
+  "arch": ["amd64", "armv7", "armhf", "aarch64"],
+  "startup": "application",
+  "boot": "auto",
+  "options": {},
+  "schema": {}
+}
