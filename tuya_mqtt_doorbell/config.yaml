@@ -14,7 +14,7 @@ schema:
     type: str
   mqtt_port:
     type: int
-    default: 1883
+    default: "1883"   # default jako string, mimo że typ int
   mqtt_username:
     type: str
   mqtt_password:
