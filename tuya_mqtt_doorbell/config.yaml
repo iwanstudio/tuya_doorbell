@@ -6,10 +6,11 @@ arch:
   - amd64
   - armv7
   - armhf
-startup: before
+startup: application
 boot: auto
 map:
-  - source: .
+  - type: bind
+    source: .
     target: /app
 options: {}
 schema: {}
