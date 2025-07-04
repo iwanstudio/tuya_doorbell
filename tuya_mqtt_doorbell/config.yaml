@@ -9,14 +9,6 @@ arch:
 startup: application
 boot: auto
 
-options:
-  mqtt_broker: ""
-  mqtt_port: 1883
-  mqtt_username: ""
-  mqtt_password: ""
-  device_id: ""
-  device_local_key: ""
-
 schema:
   mqtt_broker:
     type: str
