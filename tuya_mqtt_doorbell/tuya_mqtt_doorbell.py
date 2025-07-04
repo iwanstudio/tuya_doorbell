@@ -1,53 +1,82 @@
-import time
-import threading
-import tinytuya
+import json
 import paho.mqtt.client as mqtt
-import yaml
+import time
+import logging
 
-# Load config
-with open("config.yaml") as f:
-    config = yaml.safe_load(f)
+_LOGGER = logging.getLogger(__name__)
 
-MQTT_HOST = config["mqtt"]["host"]
-MQTT_PORT = config["mqtt"].get("port", 1883)
-MQTT_USER = config["mqtt"]["username"]
-MQTT_PASS = config["mqtt"]["password"]
+# Wczytanie konfiguracji z options.json
+def load_config():
+    try:
+        with open('/data/options.json') as f:
+            options = json.load(f)
+        return options
+    except Exception as e:
+        _LOGGER.error(f"Failed to load options.json: {e}")
+        return None
 
-DEVICE_ID = config["tuya"]["device_id"]
-LOCAL_KEY = config["tuya"]["local_key"]
-
-mqtt_client = mqtt.Client()
-
+# Callback przy połączeniu MQTT
 def on_connect(client, userdata, flags, rc):
-    print(f"Connected to MQTT with result code {rc}")
+    if rc == 0:
+        _LOGGER.info("Connected to MQTT broker successfully")
+        # Subskrybuj temat (dopasuj temat do swojego urządzenia)
+        client.subscribe("tuya/doorbell/event")
+    else:
+        _LOGGER.error(f"Failed to connect to MQTT broker, return code {rc}")
 
-mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
-mqtt_client.on_connect = on_connect
-mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
-mqtt_client.loop_start()
+# Callback przy otrzymaniu wiadomości MQTT
+def on_message(client, userdata, msg):
+    _LOGGER.info(f"Received MQTT message on topic {msg.topic}: {msg.payload.decode()}")
 
-print("Logging into Tuya Cloud...")
-c = tinytuya.Cloud(
-    apiRegion="eu",
-    apiKey="",       # Leave empty if using localKey only
-    apiSecret="",    # Leave empty if using localKey only
-    username="",     # Leave empty if using localKey only
-    password=""      # Leave empty if using localKey only
-)
+    # Tutaj możesz dodać własną logikę np. wywołanie powiadomienia itp.
 
-device = tinytuya.OutletDevice(DEVICE_ID, '', LOCAL_KEY)
-device.set_version(3.3)
+def main():
+    options = load_config()
+    if not options:
+        _LOGGER.error("No configuration found, exiting")
+        return
 
-def poll_loop():
-    last_state = None
-    while True:
-        data = device.status()
-        if 'dps' in data:
-            doorbell_state = data['dps'].get('door_bell', None)
-            if doorbell_state != last_state:
-                print(f"Doorbell state changed: {doorbell_state}")
-                mqtt_client.publish("tuya/doorbell/pressed", str(doorbell_state).lower())
-                last_state = doorbell_state
-        time.sleep(1)
+    mqtt_conf = options.get('mqtt', {})
+    device_conf = options.get('device', {})
 
-poll_loop()
+    mqtt_broker = mqtt_conf.get('broker')
+    mqtt_port = mqtt_conf.get('port', 1883)
+    mqtt_username = mqtt_conf.get('username')
+    mqtt_password = mqtt_conf.get('password')
+
+    device_id = device_conf.get('id')
+    local_key = device_conf.get('local_key')
+
+    if not all([mqtt_broker, mqtt_username, mqtt_password, device_id, local_key]):
+        _LOGGER.error("Missing MQTT or device configuration parameters")
+        return
+
+    _LOGGER.info(f"Starting Tuya MQTT Doorbell for device {device_id}")
+
+    client = mqtt.Client()
+    client.username_pw_set(mqtt_username, mqtt_password)
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    try:
+        client.connect(mqtt_broker, mqtt_port, 60)
+    except Exception as e:
+        _LOGGER.error(f"Could not connect to MQTT broker: {e}")
+        return
+
+    client.loop_start()
+
+    try:
+        while True:
+            # Tutaj możesz dodać logikę do komunikacji z urządzeniem Tuya,
+            # np. odczytywanie stanu, wysyłanie komend itp.
+            time.sleep(1)
+    except KeyboardInterrupt:
+        _LOGGER.info("Stopping Tuya MQTT Doorbell")
+    finally:
+        client.loop_stop()
+        client.disconnect()
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    main()
