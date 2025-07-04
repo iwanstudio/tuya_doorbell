@@ -1,9 +1,8 @@
-mqtt:
-  host: "192.168.3.10"
-  port: 1883
-  username: "piotr"
-  password: "Mary$ia2015"
-
-tuya:
-  device_id: "bf32835c892e7c7097tuhg"
-  local_key: "&Cv_&GUPTf9G@vj@"
+name: Tuya MQTT Doorbell
+version: "1.0"
+slug: tuya_mqtt_doorbell
+description: Listen for Tuya doorbell presses and send MQTT messages
+startup: application
+boot: auto
+options: {}
+schema: {}
