@@ -23,7 +23,7 @@ schema:
     description: ""
   mqtt_port:
     type: int
-    default: 1883
+    default: "1883"
     description: ""
   mqtt_username:
     type: str
