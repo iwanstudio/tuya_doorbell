@@ -8,6 +8,43 @@ arch:
   - armhf
 startup: application
 boot: auto
-# map: []  # lub usuń całkowicie
-options: {}
-schema: {}
+options:
+  mqtt:
+    broker: ""
+    port: 1883
+    username: ""
+    password: ""
+  device:
+    id: ""
+    local_key: ""
+schema:
+  type: object
+  properties:
+    mqtt:
+      type: object
+      properties:
+        broker:
+          type: string
+          description: "MQTT broker IP or hostname"
+        port:
+          type: integer
+          description: "MQTT port"
+          default: 1883
+        username:
+          type: string
+          description: "MQTT username"
+        password:
+          type: string
+          description: "MQTT password"
+      required: [broker, port, username, password]
+    device:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Tuya device ID"
+        local_key:
+          type: string
+          description: "Tuya device local key"
+      required: [id, local_key]
+  required: [mqtt, device]
