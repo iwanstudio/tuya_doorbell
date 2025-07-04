@@ -11,7 +11,7 @@ boot: auto
 
 options:
   mqtt_broker: ""
-  mqtt_port: "1883"
+  mqtt_port: 1883
   mqtt_username: ""
   mqtt_password: ""
   device_id: ""
@@ -20,20 +20,14 @@ options:
 schema:
   mqtt_broker:
     type: str
-    description: ""
   mqtt_port:
     type: int
-    default: "1883"
-    description: ""
+    default: 1883
   mqtt_username:
     type: str
-    description: ""
   mqtt_password:
     type: password
-    description: ""
   device_id:
     type: str
-    description: ""
   device_local_key:
     type: str
-    description: ""
