@@ -13,8 +13,7 @@ schema:
   mqtt_broker:
     type: str
   mqtt_port:
-    type: int(1,65535)
-    default: 1883
+    type: int
   mqtt_username:
     type: str
   mqtt_password:
