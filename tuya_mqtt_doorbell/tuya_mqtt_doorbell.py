@@ -5,7 +5,6 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-# Wczytanie konfiguracji z options.json
 def load_config():
     try:
         with open('/data/options.json') as f:
@@ -15,20 +14,16 @@ def load_config():
         _LOGGER.error(f"Failed to load options.json: {e}")
         return None
 
-# Callback przy połączeniu MQTT
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         _LOGGER.info("Connected to MQTT broker successfully")
-        # Subskrybuj temat (dopasuj temat do swojego urządzenia)
-        client.subscribe("tuya/doorbell/event")
+        client.subscribe("tuya/doorbell/event")  # Dopasuj temat do swojego urządzenia
     else:
         _LOGGER.error(f"Failed to connect to MQTT broker, return code {rc}")
 
-# Callback przy otrzymaniu wiadomości MQTT
 def on_message(client, userdata, msg):
     _LOGGER.info(f"Received MQTT message on topic {msg.topic}: {msg.payload.decode()}")
-
-    # Tutaj możesz dodać własną logikę np. wywołanie powiadomienia itp.
+    # Dodaj tutaj obsługę wiadomości, np. powiadomienia w HA
 
 def main():
     options = load_config()
@@ -36,19 +31,15 @@ def main():
         _LOGGER.error("No configuration found, exiting")
         return
 
-    mqtt_conf = options.get('mqtt', {})
-    device_conf = options.get('device', {})
+    mqtt_broker = options.get('mqtt_broker')
+    mqtt_port = options.get('mqtt_port', 1883)
+    mqtt_username = options.get('mqtt_username')
+    mqtt_password = options.get('mqtt_password')
+    device_id = options.get('device_id')
+    device_local_key = options.get('device_local_key')
 
-    mqtt_broker = mqtt_conf.get('broker')
-    mqtt_port = mqtt_conf.get('port', 1883)
-    mqtt_username = mqtt_conf.get('username')
-    mqtt_password = mqtt_conf.get('password')
-
-    device_id = device_conf.get('id')
-    local_key = device_conf.get('local_key')
-
-    if not all([mqtt_broker, mqtt_username, mqtt_password, device_id, local_key]):
-        _LOGGER.error("Missing MQTT or device configuration parameters")
+    if not all([mqtt_broker, mqtt_username, mqtt_password, device_id, device_local_key]):
+        _LOGGER.error("Missing required configuration parameters")
         return
 
     _LOGGER.info(f"Starting Tuya MQTT Doorbell for device {device_id}")
@@ -68,8 +59,7 @@ def main():
 
     try:
         while True:
-            # Tutaj możesz dodać logikę do komunikacji z urządzeniem Tuya,
-            # np. odczytywanie stanu, wysyłanie komend itp.
+            # Tutaj możesz dopisać logikę komunikacji z urządzeniem Tuya
             time.sleep(1)
     except KeyboardInterrupt:
         _LOGGER.info("Stopping Tuya MQTT Doorbell")
