@@ -25,7 +25,7 @@ client.loop_start()
 print("Połączono z MQTT brokerem")
 
 # Konfiguracja urządzenia Tuya
-device = OutletDevice(device_id, "192.168.3.1", device_local_key)
+device = OutletDevice(device_id, "192.168.3.55", device_local_key)
 device.set_version(3.3)
 
 print("Połączono z urządzeniem Tuya")
