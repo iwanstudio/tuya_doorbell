@@ -1,24 +1,27 @@
 name: Tuya MQTT Doorbell
-version: "1.0"
+version: "1.0.0"
 slug: tuya_mqtt_doorbell
 description: Integration for Tuya doorbell via MQTT
 arch:
   - amd64
   - armv7
+  - aarch64
   - armhf
+  - i386
 startup: application
 boot: auto
-
+init: false
+options:
+  mqtt_broker: ""
+  mqtt_port: "1883"
+  mqtt_username: ""
+  mqtt_password: ""
+  device_id: ""
+  device_local_key: ""
 schema:
-  mqtt_broker:
-    type: str
-  mqtt_port:
-    type: int
-  mqtt_username:
-    type: str
-  mqtt_password:
-    type: password
-  device_id:
-    type: str
-  device_local_key:
-    type: str
+  mqtt_broker: str
+  mqtt_port: str
+  mqtt_username: str
+  mqtt_password: password
+  device_id: str
+  device_local_key: str
