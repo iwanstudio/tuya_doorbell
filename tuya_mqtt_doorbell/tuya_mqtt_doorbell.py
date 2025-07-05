@@ -1,53 +1,48 @@
+import json
 import time
-import threading
-import tinytuya
 import paho.mqtt.client as mqtt
-import yaml
+from tinytuya import OutletDevice
 
-# Load config
-with open("config.yaml") as f:
-    config = yaml.safe_load(f)
+CONFIG_PATH = "/data/options.json"
 
-MQTT_HOST = config["mqtt"]["host"]
-MQTT_PORT = config["mqtt"].get("port", 1883)
-MQTT_USER = config["mqtt"]["username"]
-MQTT_PASS = config["mqtt"]["password"]
+# Wczytaj dane konfiguracyjne
+with open(CONFIG_PATH, "r") as f:
+    config = json.load(f)
 
-DEVICE_ID = config["tuya"]["device_id"]
-LOCAL_KEY = config["tuya"]["local_key"]
+mqtt_broker = config.get("mqtt_broker")
+mqtt_port = int(config.get("mqtt_port", 1883))
+mqtt_username = config.get("mqtt_username")
+mqtt_password = config.get("mqtt_password")
+device_id = config.get("device_id")
+device_local_key = config.get("device_local_key")
 
-mqtt_client = mqtt.Client()
+# Konfiguracja klienta MQTT
+client = mqtt.Client()
+client.username_pw_set(mqtt_username, mqtt_password)
+client.connect(mqtt_broker, mqtt_port, 60)
+client.loop_start()
 
-def on_connect(client, userdata, flags, rc):
-    print(f"Connected to MQTT with result code {rc}")
+print("Połączono z MQTT brokerem")
 
-mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
-mqtt_client.on_connect = on_connect
-mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
-mqtt_client.loop_start()
-
-print("Logging into Tuya Cloud...")
-c = tinytuya.Cloud(
-    apiRegion="eu",
-    apiKey="",       # Leave empty if using localKey only
-    apiSecret="",    # Leave empty if using localKey only
-    username="",     # Leave empty if using localKey only
-    password=""      # Leave empty if using localKey only
-)
-
-device = tinytuya.OutletDevice(DEVICE_ID, '', LOCAL_KEY)
+# Konfiguracja urządzenia Tuya
+device = OutletDevice(device_id, "192.168.3.1", device_local_key)
 device.set_version(3.3)
 
-def poll_loop():
-    last_state = None
+print("Połączono z urządzeniem Tuya")
+
+def main_loop():
     while True:
-        data = device.status()
-        if 'dps' in data:
-            doorbell_state = data['dps'].get('door_bell', None)
-            if doorbell_state != last_state:
-                print(f"Doorbell state changed: {doorbell_state}")
-                mqtt_client.publish("tuya/doorbell/pressed", str(doorbell_state).lower())
-                last_state = doorbell_state
+        try:
+            data = device.status()
+            if data:
+                dps = data.get("dps", {})
+                if "1" in dps and dps["1"] == True:
+                    print("Dzwonek został wciśnięty!")
+                    client.publish("tuya/doorbell", "pressed", qos=0, retain=False)
+                    time.sleep(5)
+        except Exception as e:
+            print("Błąd:", e)
         time.sleep(1)
 
-poll_loop()
+if __name__ == "__main__":
+    main_loop()
